@@ -3,5 +3,9 @@
 
     <string name="app_name">mobiso</string>
     <string name="hello_world">Hello world!</string>
+    <string name="searchText_hint">Enter text to lookup</string>
+    <string name="searchButton_text">Search</string>
+    <string name="title_activity_search">Search</string>
+    <string name="action_settings">Settings</string>
 
 </resources>
