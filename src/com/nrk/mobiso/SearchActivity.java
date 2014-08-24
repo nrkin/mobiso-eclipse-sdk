@@ -103,16 +103,11 @@ public class SearchActivity extends Activity {
 			LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT
 		));
 		progressBar.setIndeterminate(true);
-		Log.i(TAG, "onstart 31");
 		searchLayout.addView(progressBar);
-		Log.i(TAG, "onstart 32");
 	}
 	private void createListView() {
 		if(searchResultList == null) {
-			Log.i(TAG, "onstart 21");
 			searchResultList = new ListView(this);
-			Log.i(TAG, "onstart 22");
-			Log.i(TAG, "onstart 23");
 			adapter = 
 				new SearchResultAdapter(this, R.layout.search_result_row, parsedResult);
 			searchResultList.setAdapter(adapter);
@@ -120,29 +115,19 @@ public class SearchActivity extends Activity {
 	}
 	private void createSearchLayout(){
 		if(searchLayout == null){
-			Log.i(TAG, "onstart 11");
 			searchLayout = new LinearLayout(this);
-			Log.i(TAG, "onstart 12");
 			createLoading();
-			Log.i(TAG, "onstart 13");
 			createListView();
 			searchLayout.addView(searchResultList);
-			Log.i(TAG, "onstart 14");
 		}
 	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		Log.i(TAG, "onstart 1");
 		super.onCreate(savedInstanceState);
-		Log.i(TAG, "onstart 2");
 		currentSearchTerm = getIntent().getStringExtra("SEARCH_TEXT");
-		Log.i(TAG, "onstart 3 currentSearchTerm " + currentSearchTerm);
 		createSearchLayout();
-		Log.i(TAG, "onstart 4");
 		setContentView(searchLayout);
-		Log.i(TAG, "is empty = ? " + adapter.isEmpty());
-		Log.i(TAG, "onstart 5");
 		makeRequest();
 	}
 	

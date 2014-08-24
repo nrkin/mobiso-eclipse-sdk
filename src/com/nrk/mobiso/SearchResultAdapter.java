@@ -32,19 +32,12 @@ public class SearchResultAdapter extends ArrayAdapter<Question>{
 			convertView = inflater.inflate(layoutResourceId, parent, false); 
 		}
 		Question q = data.get(position);
-		Log.i(TAG, "61 0");
 		View textView = convertView.findViewById(R.id.question_votes);
-		Log.i(TAG, "61 01");
 		((TextView)textView).setText("" + q.score);
-		Log.i(TAG, "61 1");
 		textView = convertView.findViewById(R.id.question_text);
-		Log.i(TAG, "61 2");
 		((TextView)textView).setText(q.title);
-		Log.i(TAG, "61 3");
 		textView = convertView.findViewById(R.id.question_owner);
-		Log.i(TAG, "61 4");
 		((TextView)textView).setText(q.ownerName);
-		Log.i(TAG, "61 5");
 		return convertView;
 	}
 }
