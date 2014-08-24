@@ -1,19 +1,12 @@
 package com.nrk.mobiso;
 
-import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.Layout;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	private LinearLayout homeLayout;
@@ -25,7 +18,7 @@ public class MainActivity extends Activity {
 		//launch the activity with search term set.
 		String searchText = searchTextBox.getText().toString();
 		Intent i = new Intent(this, SearchActivity.class);
-		i.putExtra("SEARCH_TEXT_KEY", searchText);
+		i.putExtra("SEARCH_TEXT", searchText);
 		startActivity(i);
 	}
 	private void createHomeLayout(){
