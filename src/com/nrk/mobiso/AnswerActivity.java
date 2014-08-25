@@ -7,14 +7,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -27,32 +25,31 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
-public class SearchActivity extends Activity {
+public class AnswerActivity extends Activity {
 	private enum ResultStatus {
 		PROGRESS,
 		SUCCESS,
 		ERROR,
 		EMPTY
 	};
-	private LinearLayout searchLayout;
-	private SearchResultAdapter adapter;
-	private ListView searchResultList;
+	private LinearLayout answerLayout;
+	private AnswersAdapter adapter;
+	private ListView answersList;
 	private ProgressBar progressBar;
 	private TextView statusText;
-	private String currentSearchTerm;
-	private String URL = "http://api.stackexchange.com/2.2/search/advanced?order=desc&sort=relevance&site=stackoverflow";
-	private int RESULT_LIMIT = 3;
-	private String result = "";
-	private ArrayList<Question> parsedResult = new ArrayList<Question>();
-	private final static String TAG = "mobiso-zzz";
+	private Question currentQuestion;
+	private String URL = "http://api.stackexchange.com/2.2/questions/";
+	private String URLOptions = "/answers?order=desc&site=stackoverflow&filter=withbody";
+	private ArrayList<Answer> parsedResult = new ArrayList<Answer>();
+	private final static String TAG = "mobiso-anwers-zzz";
 
-	private Question getQuestion(JSONObject o) throws JSONException{
-		return new Question(
-			o.getLong("question_id"),
-			o.getString("title"),
+	private Answer getAnswer(JSONObject o) throws JSONException{
+		return new Answer(
+			//todo
+			o.getLong("answer_id"),
+			o.getString("body"),
 			o.getInt("score"),
-			o.getJSONObject("owner").getString("display_name"),
-			o.getString("body")
+			o.getJSONObject("owner").getString("display_name")
 		);
 	}
 	
@@ -60,25 +57,25 @@ public class SearchActivity extends Activity {
 		switch(status){
 			case PROGRESS:
 				progressBar.setVisibility(View.VISIBLE);
-				searchResultList.setVisibility(View.GONE);
+				answersList.setVisibility(View.GONE);
 				statusText.setText("Loading");
 				statusText.setVisibility(View.GONE);
 				break;
 			case EMPTY:
 				progressBar.setVisibility(View.GONE);
-				searchResultList.setVisibility(View.GONE);
-				statusText.setText("No results for " + currentSearchTerm);
+				answersList.setVisibility(View.GONE);
+				statusText.setText("No results for this question");
 				statusText.setVisibility(View.VISIBLE);
 				break;
 			case ERROR:
 				progressBar.setVisibility(View.GONE);
-				searchResultList.setVisibility(View.GONE);
+				answersList.setVisibility(View.GONE);
 				statusText.setText("Some error while loading results");
 				statusText.setVisibility(View.VISIBLE);
 				break;
 			case SUCCESS:
 				progressBar.setVisibility(View.GONE);
-				searchResultList.setVisibility(View.VISIBLE);
+				answersList.setVisibility(View.VISIBLE);
 				statusText.setText("Done !");
 				statusText.setVisibility(View.GONE);
 				break;
@@ -89,15 +86,12 @@ public class SearchActivity extends Activity {
 	private void makeRequest(){
 		RequestQueue queue = Volley.newRequestQueue(this);
 
-		URL = "http://api.stackexchange.com/2.2/search/advanced?" +
-				"order=desc&sort=relevance&site=stackoverflow" +
-				"&q=" + currentSearchTerm + "&pagesize=" + RESULT_LIMIT +
-				"&filter=withbody";
-		Log.i(TAG, "URL " + URL);
+		String requestURL = URL + currentQuestion.qId + URLOptions;
+		Log.i(TAG, "URL " + requestURL);
 		
 		JsonObjectRequest searchRequest = new JsonObjectRequest(
 				Request.Method.GET,
-				URL,
+				requestURL,
 				null,
 				new Response.Listener<JSONObject>() {
 					@Override
@@ -110,7 +104,7 @@ public class SearchActivity extends Activity {
 							for(int i = 0; i < items.length(); i ++){
 								o = items.getJSONObject(i);
 								Log.i(TAG, "should show " + o.toString());
-								parsedResult.add(getQuestion(o));
+								parsedResult.add(getAnswer(o));
 							}
 							if(parsedResult.isEmpty()){
 								updateView(ResultStatus.EMPTY);
@@ -123,7 +117,6 @@ public class SearchActivity extends Activity {
 							parsedResult.clear();
 							updateView(ResultStatus.ERROR);
 						}
-						Log.i(TAG, result);
 					}
 				},
 				new Response.ErrorListener() {
@@ -145,60 +138,57 @@ public class SearchActivity extends Activity {
 			LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT
 		));
 		progressBar.setIndeterminate(true);
-		searchLayout.addView(progressBar);
+		answerLayout.addView(progressBar, 2);
 	}
 	
 	private void createEmpty(){
 		statusText = new TextView(this);
 		statusText.setLayoutParams(new LayoutParams(
-			LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT
+			LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT
 		));
 		statusText.setGravity(Gravity.CENTER);
 		statusText.setText("");
-		searchLayout.addView(statusText);
+		answerLayout.addView(statusText, 1);
 	}
 	
-	private void createListView() {
-		if(searchResultList == null) {
-			searchResultList = new ListView(this);
+	private void createAnswerListView() {
+		if(answersList == null) {
+			answersList = new ListView(this);
+			createQuestionView();
 			adapter = 
-				new SearchResultAdapter(this, R.layout.search_result_row, parsedResult);
-			searchResultList.setOnItemClickListener(new OnItemClickListener() {
-
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view,
-						int position, long id) {
-					Question q;
-					Intent i;
-					SearchResultAdapter adapter = (SearchResultAdapter)parent.getAdapter(); 
-					if(adapter != null && !adapter.isEmpty()){
-						q = adapter.getItem(position);
-						Log.i("SearchActivity", "q title " + q.title);
-						i = new Intent(SearchActivity.this, AnswerActivity.class);
-						i.putExtra("CURRENT_QUESTION", q);
-						startActivity(i);
-					}
-				}
-			});
-			searchResultList.setAdapter(adapter);
+				new AnswersAdapter(this, R.layout.search_answer, parsedResult);
+			answersList.setAdapter(adapter);
+			answerLayout.addView(answersList, 0);
 		}
 	}
-	private void createSearchLayout(){
-		if(searchLayout == null){
-			searchLayout = new LinearLayout(this);
-			createLoading();
+
+	private void createQuestionView(){
+		TextView questionView = new TextView(this);
+		questionView.setText(Html.fromHtml(currentQuestion.contents));
+		answersList.addHeaderView(questionView);
+	}
+
+	private void createAnswerLayout(){
+		if(answerLayout == null){
+			answerLayout = new LinearLayout(this);
+			answerLayout.setLayoutParams(new LayoutParams(
+				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT
+			));
+			answerLayout.setOrientation(1);
+			//createQuestionView();
+			createAnswerListView();
 			createEmpty();
-			createListView();
-			searchLayout.addView(searchResultList);
+			createLoading();
 		}
 	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		currentSearchTerm = getIntent().getStringExtra("SEARCH_TEXT");
-		createSearchLayout();
-		setContentView(searchLayout);
+		currentQuestion = 
+			(Question)getIntent().getExtras().getParcelable("CURRENT_QUESTION");
+		createAnswerLayout();
+		setContentView(answerLayout);
 		makeRequest();
 	}
 	
@@ -216,7 +206,7 @@ public class SearchActivity extends Activity {
 	
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub	
 		super.onPause();
 	}
 }
