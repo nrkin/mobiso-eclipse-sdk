@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.text.Html;
-import android.util.Log;
 
 public class SearchResultAdapter extends ArrayAdapter<Question>{
 	final static private String TAG = "SearchResultAdapter";
@@ -29,7 +28,6 @@ public class SearchResultAdapter extends ArrayAdapter<Question>{
 	public View getView(int position, View convertView, ViewGroup parent) {
 		if(convertView == null){
 			LayoutInflater inflater = ((Activity) context).getLayoutInflater();
-			Log.i(TAG, "layoutResourceId " + (layoutResourceId == R.layout.search_result_row));
 			convertView = inflater.inflate(layoutResourceId, parent, false); 
 		}
 		Question q = data.get(position);

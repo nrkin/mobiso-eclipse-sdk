@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -93,7 +92,6 @@ public class SearchActivity extends Activity {
 				"order=desc&sort=relevance&site=stackoverflow" +
 				"&q=" + currentSearchTerm + "&pagesize=" + RESULT_LIMIT +
 				"&filter=withbody";
-		Log.i(TAG, "URL " + URL);
 		
 		JsonObjectRequest searchRequest = new JsonObjectRequest(
 				Request.Method.GET,
@@ -102,14 +100,12 @@ public class SearchActivity extends Activity {
 				new Response.Listener<JSONObject>() {
 					@Override
 					public void onResponse(JSONObject response){
-						Log.i(TAG, response.toString());
 						try {
 							JSONObject o;
 							JSONArray items = response.getJSONArray("items");
 							parsedResult.clear();
 							for(int i = 0; i < items.length(); i ++){
 								o = items.getJSONObject(i);
-								Log.i(TAG, "should show " + o.toString());
 								parsedResult.add(getQuestion(o));
 							}
 							if(parsedResult.isEmpty()){
@@ -118,19 +114,15 @@ public class SearchActivity extends Activity {
 								updateView(ResultStatus.SUCCESS);
 							}
 						} catch (JSONException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 							parsedResult.clear();
 							updateView(ResultStatus.ERROR);
 						}
-						Log.i(TAG, result);
 					}
 				},
 				new Response.ErrorListener() {
 					@Override
 					public void onErrorResponse(VolleyError error) {
-						// TODO Auto-generated method stub
-						Log.i(TAG, error.getMessage());
 						updateView(ResultStatus.ERROR);
 					}
 				}
@@ -173,7 +165,6 @@ public class SearchActivity extends Activity {
 					SearchResultAdapter adapter = (SearchResultAdapter)parent.getAdapter(); 
 					if(adapter != null && !adapter.isEmpty()){
 						q = adapter.getItem(position);
-						Log.i("SearchActivity", "q title " + q.title);
 						i = new Intent(SearchActivity.this, AnswerActivity.class);
 						i.putExtra("CURRENT_QUESTION", q);
 						startActivity(i);

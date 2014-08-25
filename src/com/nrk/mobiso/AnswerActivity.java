@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.Html;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -87,7 +86,6 @@ public class AnswerActivity extends Activity {
 		RequestQueue queue = Volley.newRequestQueue(this);
 
 		String requestURL = URL + currentQuestion.qId + URLOptions;
-		Log.i(TAG, "URL " + requestURL);
 		
 		JsonObjectRequest searchRequest = new JsonObjectRequest(
 				Request.Method.GET,
@@ -96,14 +94,12 @@ public class AnswerActivity extends Activity {
 				new Response.Listener<JSONObject>() {
 					@Override
 					public void onResponse(JSONObject response){
-						Log.i(TAG, response.toString());
 						try {
 							JSONObject o;
 							JSONArray items = response.getJSONArray("items");
 							parsedResult.clear();
 							for(int i = 0; i < items.length(); i ++){
 								o = items.getJSONObject(i);
-								Log.i(TAG, "should show " + o.toString());
 								parsedResult.add(getAnswer(o));
 							}
 							if(parsedResult.isEmpty()){
@@ -112,7 +108,6 @@ public class AnswerActivity extends Activity {
 								updateView(ResultStatus.SUCCESS);
 							}
 						} catch (JSONException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 							parsedResult.clear();
 							updateView(ResultStatus.ERROR);
@@ -122,8 +117,6 @@ public class AnswerActivity extends Activity {
 				new Response.ErrorListener() {
 					@Override
 					public void onErrorResponse(VolleyError error) {
-						// TODO Auto-generated method stub
-						Log.i(TAG, error.getMessage());
 						updateView(ResultStatus.ERROR);
 					}
 				}
