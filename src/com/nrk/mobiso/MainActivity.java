@@ -17,6 +17,9 @@ public class MainActivity extends Activity {
 	private void handleButtonClick(){
 		//launch the activity with search term set.
 		String searchText = searchTextBox.getText().toString();
+		if(searchText == null || searchText.length() == 0){
+			return;
+		}
 		Intent i = new Intent(this, SearchActivity.class);
 		i.putExtra("SEARCH_TEXT", searchText);
 		startActivity(i);

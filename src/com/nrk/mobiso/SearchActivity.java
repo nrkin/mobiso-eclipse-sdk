@@ -8,6 +8,9 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -40,10 +43,12 @@ public class SearchActivity extends Activity {
 	private TextView statusText;
 	private String currentSearchTerm;
 	private String URL = "http://api.stackexchange.com/2.2/search/advanced?order=desc&sort=relevance&site=stackoverflow";
-	private int RESULT_LIMIT = 3;
+	private int RESULT_LIMIT = 30;
 	private String result = "";
 	private ArrayList<Question> parsedResult = new ArrayList<Question>();
 	private final static String TAG = "mobiso-zzz";
+	private QuestionDAO questionDAO;
+	private SQLiteDatabase qDB;
 
 	private Question getQuestion(JSONObject o) throws JSONException{
 		return new Question(
@@ -104,13 +109,19 @@ public class SearchActivity extends Activity {
 							JSONObject o;
 							JSONArray items = response.getJSONArray("items");
 							parsedResult.clear();
+							if(items != null && items.length() > 0){
+								questionDAO.openDb();
+							}
 							for(int i = 0; i < items.length(); i ++){
 								o = items.getJSONObject(i);
-								parsedResult.add(getQuestion(o));
+								Question q = getQuestion(o);
+								parsedResult.add(q);
+								questionDAO.saveQuestion(q, currentSearchTerm);
 							}
 							if(parsedResult.isEmpty()){
 								updateView(ResultStatus.EMPTY);
 							} else {
+								questionDAO.closeDb();
 								updateView(ResultStatus.SUCCESS);
 							}
 						} catch (JSONException e) {
@@ -184,13 +195,35 @@ public class SearchActivity extends Activity {
 		}
 	}
 	
+	private void lookupOffline(){
+		questionDAO.openDb();
+		updateView(ResultStatus.PROGRESS);
+		parsedResult = null;
+		parsedResult = questionDAO.lookup(currentSearchTerm);
+		adapter.clear();
+		adapter.addAll(parsedResult);
+		//parsedResult.clear();
+		if(parsedResult.isEmpty()){
+			updateView(ResultStatus.EMPTY);
+		} else {
+			updateView(ResultStatus.SUCCESS);
+		}
+		questionDAO.closeDb();
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		questionDAO = new QuestionDAO(this);
+		
 		currentSearchTerm = getIntent().getStringExtra("SEARCH_TEXT");
 		createSearchLayout();
 		setContentView(searchLayout);
-		makeRequest();
+		if(NetworkStatus.isConnected(this)){
+			makeRequest();
+		} else {
+			lookupOffline();
+		}
 	}
 	
 	@Override
@@ -203,11 +236,13 @@ public class SearchActivity extends Activity {
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
+		questionDAO.closeDb();
 	}
 	
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
+		questionDAO.closeDb();
 	}
 }
