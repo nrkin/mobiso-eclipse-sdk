@@ -34,7 +34,7 @@ public class SearchResultAdapter extends ArrayAdapter<Question>{
 		View textView = convertView.findViewById(R.id.question_votes);
 		((TextView)textView).setText("" + q.score);
 		textView = convertView.findViewById(R.id.question_text);
-		((TextView)textView).setText(q.title);
+		((TextView)textView).setText(Html.fromHtml(q.title));
 		textView = convertView.findViewById(R.id.question_owner);
 		((TextView)textView).setText(q.ownerName);
 		return convertView;

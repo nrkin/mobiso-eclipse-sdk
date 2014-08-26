@@ -25,7 +25,9 @@ public class AnswerDAO {
 	}
 	
 	public void closeDb(){
-		db.close();
+		if(db != null) {
+			db.close();
+		}
 	}
 	
 	public boolean recordExists(Answer a) {

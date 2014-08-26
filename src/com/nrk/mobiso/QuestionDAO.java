@@ -27,7 +27,9 @@ public class QuestionDAO {
 	}
 	
 	public void closeDb(){
-		db.close();
+		if(db != null) {
+			db.close();
+		}
 	}
 	
 	public boolean recordExists(Question q, String searchQuery) {
@@ -67,7 +69,7 @@ public class QuestionDAO {
 				c.getLong(c.getColumnIndex(QuestionSQLiteHelper.COLUMN_NAME_ID)),
 				c.getString(c.getColumnIndex(QuestionSQLiteHelper.COLUMN_NAME_TITLE)),
 				c.getInt(c.getColumnIndex(QuestionSQLiteHelper.COLUMN_NAME_SCORE)),
-				c.getString(c.getColumnIndex(QuestionSQLiteHelper.COLUMN_NAME_TITLE)),
+				c.getString(c.getColumnIndex(QuestionSQLiteHelper.COLUMN_NAME_OWNERNAME)),
 				c.getString(c.getColumnIndex(QuestionSQLiteHelper.COLUMN_NAME_CONTENTS))
 			);
 			questions.add(q);

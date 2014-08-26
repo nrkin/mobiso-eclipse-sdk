@@ -1,7 +1,6 @@
 package com.nrk.mobiso;
 
 import java.util.ArrayList;
-
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.text.Html;
 import android.util.Log;
 
 public class AnswersAdapter extends ArrayAdapter<Answer>{
@@ -33,7 +33,7 @@ public class AnswersAdapter extends ArrayAdapter<Answer>{
 		}
 		Answer ans = data.get(position);
 		View textView = convertView.findViewById(R.id.answer_body);
-		((TextView)textView).setText("" + ans.contents);
+		((TextView)textView).setText(Html.fromHtml(ans.contents));
 		textView = convertView.findViewById(R.id.answer_score);
 		((TextView)textView).setText("Score : " + ans.score);
 		return convertView;
