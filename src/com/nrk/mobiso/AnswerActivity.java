@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Gravity;
@@ -41,6 +42,8 @@ public class AnswerActivity extends Activity {
 	private String URLOptions = "/answers?order=desc&site=stackoverflow&filter=withbody";
 	private ArrayList<Answer> parsedResult = new ArrayList<Answer>();
 	private final static String TAG = "mobiso-anwers-zzz";
+	private AnswerDAO answerDAO;
+	private SQLiteDatabase qDB;
 
 	private Answer getAnswer(JSONObject o) throws JSONException{
 		return new Answer(
@@ -63,13 +66,13 @@ public class AnswerActivity extends Activity {
 			case EMPTY:
 				progressBar.setVisibility(View.GONE);
 				answersList.setVisibility(View.GONE);
-				statusText.setText("No results for this question");
+				statusText.setText("Answer for this question is not stored");
 				statusText.setVisibility(View.VISIBLE);
 				break;
 			case ERROR:
 				progressBar.setVisibility(View.GONE);
 				answersList.setVisibility(View.GONE);
-				statusText.setText("Some error while loading results");
+				statusText.setText("Some error while showing results");
 				statusText.setVisibility(View.VISIBLE);
 				break;
 			case SUCCESS:
@@ -97,15 +100,21 @@ public class AnswerActivity extends Activity {
 						try {
 							JSONObject o;
 							JSONArray items = response.getJSONArray("items");
+							if(items != null && items.length() > 0) {
+								answerDAO.openDb();
+							}
 							parsedResult.clear();
 							for(int i = 0; i < items.length(); i ++){
 								o = items.getJSONObject(i);
-								parsedResult.add(getAnswer(o));
+								Answer a = getAnswer(o);
+								parsedResult.add(a);
+								answerDAO.saveAnswer(a, currentQuestion.qId);
 							}
 							if(parsedResult.isEmpty()){
 								updateView(ResultStatus.EMPTY);
 							} else {
 								updateView(ResultStatus.SUCCESS);
+								answerDAO.closeDb();
 							}
 						} catch (JSONException e) {
 							e.printStackTrace();
@@ -175,6 +184,22 @@ public class AnswerActivity extends Activity {
 		}
 	}
 	
+	private void lookupOffline(){
+		answerDAO.openDb();
+		updateView(ResultStatus.PROGRESS);
+		parsedResult = null;
+		parsedResult = answerDAO.lookup(currentQuestion.qId);
+		adapter.clear();
+		adapter.addAll(parsedResult);
+		//parsedResult.clear();
+		if(parsedResult.isEmpty()){
+			updateView(ResultStatus.EMPTY);
+		} else {
+			updateView(ResultStatus.SUCCESS);
+		}
+		answerDAO.closeDb();
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -182,7 +207,12 @@ public class AnswerActivity extends Activity {
 			(Question)getIntent().getExtras().getParcelable("CURRENT_QUESTION");
 		createAnswerLayout();
 		setContentView(answerLayout);
-		makeRequest();
+		answerDAO = new AnswerDAO(this);
+		if(NetworkStatus.isConnected(this)){
+			makeRequest();
+		} else {
+			lookupOffline();
+		}
 	}
 	
 	@Override
@@ -195,11 +225,13 @@ public class AnswerActivity extends Activity {
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
+		answerDAO.closeDb();
 	}
 	
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub	
 		super.onPause();
+		answerDAO.closeDb();
 	}
 }

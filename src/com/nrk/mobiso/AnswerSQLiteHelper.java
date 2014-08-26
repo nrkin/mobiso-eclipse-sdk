@@ -2,30 +2,26 @@ package com.nrk.mobiso;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class QuestionSQLiteHelper extends SQLiteOpenHelper{
-	public static final String DATABASE_NAME = "mobiso_questions.db";
-	public static final String TABLE_NAME = "questions";
-	public static final String COLUMN_NAME_ID = "qId";
+public class AnswerSQLiteHelper  extends SQLiteOpenHelper{
+	public static final String DATABASE_NAME = "mobiso_answers.db";
+	public static final String TABLE_NAME = "answers";
+	public static final String COLUMN_NAME_ID = "id";
 	public static final String COLUMN_NAME_OWNERNAME = "ownerName";
-	public static final String COLUMN_NAME_TITLE = "title";
 	public static final String COLUMN_NAME_CONTENTS = "contents";
 	public static final String COLUMN_NAME_SCORE = "score";
-	public static final String COLUMN_NAME_SEARCH_QUERY = "search_query";
+	public static final String COLUMN_NAME_QID = "qId";
 	
 	private String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME +
-			"(" + COLUMN_NAME_ID + " INTEGER NOT NULL" +
+			"(" + COLUMN_NAME_ID + " INTEGER NOT NULL PRIMARY KEY " +
 			", " + COLUMN_NAME_OWNERNAME + " TEXT NOT NULL" +
-			", " + COLUMN_NAME_TITLE + " TEXT NOT NULL" +
 			", " + COLUMN_NAME_CONTENTS + " TEXT NOT NULL" +
 			", " + COLUMN_NAME_SCORE + " INTEGER" +
-			", " + COLUMN_NAME_SEARCH_QUERY + " TEXT NOT NULL" +
-			", " + "PRIMARY KEY (" + COLUMN_NAME_ID + "," + COLUMN_NAME_SEARCH_QUERY + ")" +
+			", " + COLUMN_NAME_QID + " INTEGER NOT NULL" +
 			");";
 
-	public QuestionSQLiteHelper(Context context) {
+	public AnswerSQLiteHelper(Context context) {
 		super(context, DATABASE_NAME, null, 2);
 	}
 
